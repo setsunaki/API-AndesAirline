@@ -17,7 +17,7 @@ app.get('/', (req,res) => {
     res.send('API Check-in Andes Airlines');
 });
 
-routerApi();
+routerApi(app);
 
 app.listen(port,()=>{
     console.log("Port ==> ",port);

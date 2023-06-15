@@ -32,12 +32,13 @@ const FlightSchema = {
         type: DataTypes.STRING
     },
     airplane_id: {
-        foreignKey: true,
-        type: DataTypes.INTEGER
-        
+        type: DataTypes.INTEGER,
+        refereces:{
+            model: Airplane,
+            key: 'airplane_id'
+        }    
     }
 }
 
-Flight.belongsTo(Airplane, { foreignKey: 'airplane_id' });
 
 module.exports = { Flight, FlightSchema };

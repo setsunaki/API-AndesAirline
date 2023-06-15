@@ -1,5 +1,5 @@
 const { models } = require('../libs/sequelize');
-
+const { BoardingPass } = require('../db/models/boardingPass.model');
 
 class BoardingService {
     
@@ -7,7 +7,11 @@ class BoardingService {
 
     //Busca por id
     async findOne(id){
-        const res = await models.BoardingPass.findByPk(id);
+        
+        const res = await BoardingPass.findOne({where:{
+            boarding_pass_id: id
+        }});
+        console.log(res.passenger_id);
         return res;
     }
 

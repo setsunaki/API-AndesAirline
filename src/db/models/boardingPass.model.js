@@ -26,30 +26,39 @@ const BoardingPassSchema = {
     },
     purchase_id:{
         type: DataTypes.INTEGER,
-        foreignKey: true
+        references:{
+            model: Purchase,
+            key: 'purchase_id'
+        }
     },
     passenger_id:{
         type: DataTypes.INTEGER,
-        foreignKey: true
+        references: {
+            model: Passenger,
+            key:'passenger_id'
+        }
     },
     seat_type_id:{
         type: DataTypes.INTEGER,
-        foreignKey: true
+        references: {
+            model: SeatType,
+            key: 'seat_type_id'
+        }
     },
     seat_id:{
         type: DataTypes.INTEGER,
-        foreignKey: true
+        references: {
+            model: Seat,
+            key: 'seat_id'
+        }
     },
     flight_id:{
         type: DataTypes.INTEGER,
-        foreignKey: true
+        references: {
+            model: Flight,
+            key: 'flight_id'
+        }
     }
 }
-
-BoardingPass.belongsTo(Purchase, { foreignKey: 'purchase_id' });
-BoardingPass.belongsTo(Passenger, { foreignKey: 'passenger_id' });
-BoardingPass.belongsTo(SeatType, { foreignKey: 'seat_type_id' });
-BoardingPass.belongsTo(Seat, { foreignKey: 'seat_id' });
-BoardingPass.belongsTo(Flight, { foreignKey: 'airplane_id' });
 
 module.exports = { BoardingPass, BoardingPassSchema };

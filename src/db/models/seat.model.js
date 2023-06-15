@@ -28,15 +28,21 @@ const SeatSchema = {
     },
     seat_type_id: {
         type: DataTypes.INTEGER,
-        foreignKey: true
+        refereces:{
+            model: SeatType,
+            key: 'seat_type_id'
+        } 
     },
     airplane_id: {
         type: DataTypes.INTEGER,
-        foreignKey: true
+        refereces:{
+            model: Airplane,
+            key: 'airplane_id'
+        }    
     }
 }
 
-Seat.belongsTo(SeatType, { foreignKey: 'seat_type_id' });
-Seat.belongsTo(Airplane, { foreignKey: 'airplane_id' });
+//Seat.belongsTo(SeatType, { foreignKey: 'seat_type_id' });
+//Seat.belongsTo(Airplane, { foreignKey: 'airplane_id' });
 
 module.exports = { Seat, SeatSchema };
