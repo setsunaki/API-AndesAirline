@@ -1,6 +1,16 @@
+const { models } = require('../libs/sequelize');
 
-class FlightsService {
+
+class BoardingService {
+    
     constructor(){}
+
+    //Busca por id
+    async findOne(id){
+        const res = await models.BoardingPass.findByPk(id);
+        return res;
+    }
+
 }
 
-module.exports = PersonsService;
+module.exports = BoardingService;

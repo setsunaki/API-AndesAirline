@@ -32,8 +32,9 @@ const FlightSchema = {
         type: DataTypes.STRING
     },
     airplane_id: {
-        type: DataTypes.INTEGER,
-        foreingKey: true
+        foreignKey: true,
+        type: DataTypes.INTEGER
+        
     }
 }
 

@@ -28,11 +28,11 @@ const SeatSchema = {
     },
     seat_type_id: {
         type: DataTypes.INTEGER,
-        foreingKey: true
+        foreignKey: true
     },
     airplane_id: {
         type: DataTypes.INTEGER,
-        foreingKey: true
+        foreignKey: true
     }
 }
 

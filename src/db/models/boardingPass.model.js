@@ -1,4 +1,5 @@
 const { Model, DataTypes } = require('sequelize');
+
 const { Purchase } = require('./purchase.model');
 const { Passenger } = require('./passenger.model');
 const { SeatType } = require('./seatType.model');
@@ -25,23 +26,23 @@ const BoardingPassSchema = {
     },
     purchase_id:{
         type: DataTypes.INTEGER,
-        primaryKey: true
+        foreignKey: true
     },
     passenger_id:{
         type: DataTypes.INTEGER,
-        primaryKey: true
+        foreignKey: true
     },
     seat_type_id:{
         type: DataTypes.INTEGER,
-        primaryKey: true
+        foreignKey: true
     },
     seat_id:{
         type: DataTypes.INTEGER,
-        primaryKey: true
+        foreignKey: true
     },
     flight_id:{
         type: DataTypes.INTEGER,
-        primaryKey: true
+        foreignKey: true
     }
 }
 
@@ -49,6 +50,6 @@ BoardingPass.belongsTo(Purchase, { foreignKey: 'purchase_id' });
 BoardingPass.belongsTo(Passenger, { foreignKey: 'passenger_id' });
 BoardingPass.belongsTo(SeatType, { foreignKey: 'seat_type_id' });
 BoardingPass.belongsTo(Seat, { foreignKey: 'seat_id' });
-BoardingPass.belongsTo(Airplane, { foreignKey: 'airplane_id' });
+BoardingPass.belongsTo(Flight, { foreignKey: 'airplane_id' });
 
 module.exports = { BoardingPass, BoardingPassSchema };
