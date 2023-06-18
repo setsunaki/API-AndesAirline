@@ -11,7 +11,6 @@ const asingSeat = async (airplaneId, boardingPass) =>{
     //Asientos con el seat_type_id y airplane_id 
     // Preguntar si asignedSeat tiene registro y si tiene buscar seats pero excluir los que estan en asignedSeat
     // Obtener los IDs de los asientos asignados
-    console.log("ASIENTOS YA OCUPADOS: ", asignedSeat);
     let assignedSeatIds = [];
     if (asignedSeat.length > 0) {
         assignedSeatIds = asignedSeat.map(seat => seat.seat_id);
@@ -203,9 +202,6 @@ const getById = async (req, res) =>{
     }
     
 }
-
-
-
 
 module.exports = {
     getById
