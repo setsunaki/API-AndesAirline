@@ -5,6 +5,93 @@ const { Flight } = require('../db/models/flight.model');
 const { Passenger } = require('../db/models/passenger.model');
 const { Seat } = require('../db/models/seat.model');
 
+let asignedSeat = [];
+
+const asingSeat = async (airplaneId, boardingPass) =>{
+    //Asientos con el seat_type_id y airplane_id 
+    // Preguntar si asignedSeat tiene registro y si tiene buscar seats pero excluir los que estan en asignedSeat
+    // Obtener los IDs de los asientos asignados
+    console.log("ASIENTOS YA OCUPADOS: ", asignedSeat);
+    let assignedSeatIds = [];
+    if (asignedSeat.length > 0) {
+        assignedSeatIds = asignedSeat.map(seat => seat.seat_id);
+    }
+    const seats = await Seat.findAll({
+        where:{
+            seat_type_id: boardingPass.seat_type_id,
+            airplane_id: airplaneId,
+            seat_id: { [Op.notIn]: assignedSeatIds }
+        },
+        order: [['seat_row', 'ASC']]
+    });
+
+    // fila y columna
+    seats.map(seat => seat.seat_row);
+    const seatRow = seats[0].seat_row;
+
+    seats.map(seat => seat.seat_column);
+    const seatColumn = seats[0].seat_column;
+
+    // Adjacente dentro de la fila
+    const seatSameRow = await Seat.findAll({
+        where: {
+          seat_type_id: boardingPass.seat_type_id,
+          airplane_id: airplaneId,
+          seat_row : seatRow
+        },
+        order: [['seat_column', 'ASC']]
+    });
+
+    // Asiento en las filas superior o posterior
+    const seatAdjacentRows = await Seat.findAll({
+        where: {
+        seat_type_id: boardingPass.seat_type_id,
+        airplane_id: airplaneId,
+        [Op.and]: [
+            {
+            [Op.or]: [
+                { seat_row: seatRow - 1 },
+                { seat_row: seatRow + 1 }
+            ]
+            },
+            { seat_column: seatColumn } 
+        ]
+        }
+    });
+    
+    // Combinar los asientos adyacentes de la misma fila y las filas adyacentes
+    const adjacentSeats = [...seatSameRow, ...seatAdjacentRows];
+
+    // Devolver el primer asiento adyacente disponible
+    let seat = adjacentSeats.find(adjSeat => adjSeat.passenger_id === undefined);
+
+    //Preguntar si seat esta dentro del asignedSeat
+    if(asignedSeat.some(assignedSeat => assignedSeat.seat_id === seat.seat_id)){
+        //si esta el seat entonces quitarlo del adjacentSeats y devolver el siguiente asiento que encuentre
+        // Obtener los asientos de asignedSeat que están en adjacentSeats
+        const adjacentSeatsToRemove = adjacentSeats.filter(
+            adjSeat => asignedSeat.some(assignedSeat => assignedSeat.seat_id === adjSeat.seat_id)
+        );
+        // Eliminar los asientos de adjacentSeats que están en asignedSeat
+        adjacentSeatsToRemove.forEach(adjSeat => {
+            const index = adjacentSeats.findIndex(seat => seat.seat_id === adjSeat.seat_id);
+            if (index !== -1) {
+            adjacentSeats.splice(index, 1);
+            }
+        });
+        //Saca el siguiente asiento disponible
+        seat = adjacentSeats.find(adjSeat => adjSeat.passenger_id === undefined);
+
+        asignedSeat.push(seat);
+
+    }else{
+        //Si no esta el asiento entonces devolver el seat y agregarlo al asignedSeat
+        asignedSeat.push(seat);
+    }
+    //devolver el asiento disponible
+    return seat;
+}
+
 const getById = async (req, res) =>{
     try{
         let respuesta = {};
@@ -20,18 +107,34 @@ const getById = async (req, res) =>{
         // Una sola tarjeta de embarque
         if (boarding.length === 1){
             const passengers = await Passenger.findByPk(boarding[0].passenger_id);
+
+            try{
+                let seat =await asingSeat(flight.airplane_id, boarding);
             
-            passenger.push({
-                passengerId: passengers.passenger_id,
-                dni: passengers.dni,
-                name: passengers.name,
-                age: passengers.age,
-                country: passengers.country,
-                boardingPassId: boarding[0].boarding_pass_id,
-                purchaseId: boarding[0].purchase_id,
-                seatTypeId: boarding[0].seat_type_id,
-                seatId: boarding[0].seat_id
-            });
+                passenger.push({
+                    passengerId: passengers.passenger_id,
+                    dni: passengers.dni,
+                    name: passengers.name,
+                    age: passengers.age,
+                    country: passengers.country,
+                    boardingPassId: boarding[0].boarding_pass_id,
+                    purchaseId: boarding[0].purchase_id,
+                    seatTypeId: boarding[0].seat_type_id,
+                    seatId: seat.seat_id
+                });
+            }catch(error){
+                passenger.push({
+                    passengerId: passengers.passenger_id,
+                    dni: passengers.dni,
+                    name: passengers.name,
+                    age: passengers.age,
+                    country: passengers.country,
+                    boardingPassId: boarding[0].boarding_pass_id,
+                    purchaseId: boarding[0].purchase_id,
+                    seatTypeId: boarding[0].seat_type_id,
+                    seatId: null
+                });
+            }
 
             
         }else{
@@ -41,18 +144,37 @@ const getById = async (req, res) =>{
                 
                 // Sacar el id avion 
                 const airplane = await Flight.findByPk(boardingPass.flight_id);
+
+                //Llamar funcion asignSeat y pasar el passengers.passenger_id y el airplane.airplane_id
+                try{
+                    let seat =await asingSeat(airplane.airplane_id, boardingPass);
+                    
+                    passenger.push({
+                        passengerId: passengers.passenger_id,
+                        dni: passengers.dni,
+                        name: passengers.name,
+                        age: passengers.age,
+                        country: passengers.country,
+                        boardingPassId: boardingPass.boarding_pass_id,
+                        purchaseId: boardingPass.purchase_id,
+                        seatTypeId: boardingPass.seat_type_id,
+                        seatId:  seat.seat_id 
+                    });
+
+                }catch(error){
                 
-                passenger.push({
-                    passengerId: passengers.passenger_id,
-                    dni: passengers.dni,
-                    name: passengers.name,
-                    age: passengers.age,
-                    country: passengers.country,
-                    boardingPassId: boardingPass.boarding_pass_id,
-                    purchaseId: boardingPass.purchase_id,
-                    seatTypeId: boardingPass.seat_type_id,
-                    //seatId:  seat.seat_id 
-                });
+                    passenger.push({
+                        passengerId: passengers.passenger_id,
+                        dni: passengers.dni,
+                        name: passengers.name,
+                        age: passengers.age,
+                        country: passengers.country,
+                        boardingPassId: boardingPass.boarding_pass_id,
+                        purchaseId: boardingPass.purchase_id,
+                        seatTypeId: boardingPass.seat_type_id,
+                        seatId:  null 
+                    });
+                }
                 
             }  
              
@@ -79,7 +201,11 @@ const getById = async (req, res) =>{
             errors: "could not connect to db"
         });
     }
+    
 }
+
+
+
 
 module.exports = {
     getById
